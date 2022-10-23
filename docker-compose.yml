@@ -14,6 +14,9 @@ services:
       - /var/log/nginx:/var/log/nginx
     environment:
       - SERVER_URL_GIT=${SERVER_URL_GIT}
+      - SERVER_URL_JENKINS=${SERVER_URL_JENKINS}
+      - SERVER_URL_REGOSTRY=${SERVER_URL_REGISTRY}
+
     networks:
       - votek-solutions-dev-network
     depends_on:
@@ -31,7 +34,6 @@ services:
     restart: always
     hostname: git.develop.votek.solutions
     environment:
-      - SERVER_URL_JENKINS=${SERVER_URL_JENKINS}
       GITLAB_OMNIBUS_CONFIG: |
         external_url 'https://${SERVER_URL_JENKINS}'
         # Add any other gitlab.rb configuration here, each on its own line
@@ -56,8 +58,6 @@ services:
     volumes:
        - /home/${myname}/jenkins_compose/jenkins_configuration:/var/jenkins_home
        - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      - SERVER_URL_REPOSITORY=${SERVER_URL_REPOSITORY}
 
   registry:
     image: registry:latest
