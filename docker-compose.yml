@@ -15,7 +15,8 @@ services:
     environment:
       - SERVER_URL_GIT=${SERVER_URL_GIT}
       - SERVER_URL_JENKINS=${SERVER_URL_JENKINS}
-      - SERVER_URL_REGOSTRY=${SERVER_URL_REGISTRY}
+      - SERVER_URL_REGISTRY=${SERVER_URL_REGISTRY}
+      - SERVER_URL_SONARQUBE=${SERVER_URL_SONARQUBE}
     networks:
       - votek-solutions-dev-network
     depends_on:
@@ -86,7 +87,6 @@ services:
 
   sonarqube:
     image: sonarqube:community
-    hostname: sonarqube
     container_name: sonarqube
     depends_on:
       - db
@@ -102,7 +102,7 @@ services:
       - 9000:9000
     networks:
       - votek-solutions-dev-network
-      
+
   db:
     image: postgres:latest
     hostname: postgresql
@@ -114,6 +114,8 @@ services:
     volumes:
       - ./postgresql:/var/lib/postgresql
       - ./postgresql/data:/var/lib/postgresql/data
+    networks:
+      - votek-solutions-dev-network
 
 networks:
   votek-solutions-dev-network:
