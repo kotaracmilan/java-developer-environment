@@ -61,7 +61,7 @@ services:
 
   registry:
     image: registry:latest
-    container_name: docker-registry
+    container_name: registry
     restart: always
     volumes:
       - ./registry:/var/lib/registry #proveriti
@@ -69,7 +69,7 @@ services:
       - 5000:5000
 
   certbot:
-    container_name: letsencrypt-bot
+    container_name: certbot
     image: certbot/certbot
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt
