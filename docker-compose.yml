@@ -20,13 +20,15 @@ services:
     networks:
       - votek-solutions-dev-network
     depends_on:
-      - "gitlab"
-      - "jenkins"
-      - "registry"
+      - gitlab
+      - jenkins
+      - registry
+      - sonarqube
     links:
       - gitlab
       - jenkins
       - registry
+      - sonarqube
 
   gitlab:
     image: gitlab/gitlab-ee:latest
