@@ -1,36 +1,85 @@
-version: '3.6'
+version: '3.9'
 services:
-  gitlab:
-    image: 'gitlab/gitlab-ee:latest'
-    restart: always
-    hostname: 'git.develop.votek.solutions'
+  nginx:
+    image: nginxproxy/nginx-proxy:latest
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx/app.conf:/etc/nginx/nginx.conf
+      - /etc/letsencrypt:/ets/letsencrypt
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - /var/log/nginx:/var/log/nginx
     environment:
+      - SERVER_URL_GIT=${SERVER_URL_GIT}
+    networks:
+      - votek-solutions-dev-network
+    depends_on:
+      - "gitlab"
+      - "jenkins"
+      - "registry"
+    links:
+      - gitlab
+      - jenkins
+      - registry
+
+  gitlab:
+    image: gitlab/gitlab-ee:latest
+    container_name: gitlab
+    restart: always
+    hostname: git.develop.votek.solutions
+    environment:
+      - SERVER_URL_JENKINS=${SERVER_URL_JENKINS}
       GITLAB_OMNIBUS_CONFIG: |
-        external_url 'https://gitlab.example.com'
+        external_url 'https://${SERVER_URL_JENKINS}'
         # Add any other gitlab.rb configuration here, each on its own line
     ports:
-      - '80:80'
-      - '443:443'
-      - '22:22'
+      - 980:80
+      - 9443:443
+      - 922:22
     volumes:
-      - '$GITLAB_HOME/config:/etc/gitlab'
-      - '$GITLAB_HOME/logs:/var/log/gitlab'
-      - '$GITLAB_HOME/data:/var/opt/gitlab'
+      - ./gitlab/config:/etc/gitlab
+      - ./gitlab/logs:/var/log/gitlab
+      - ./gitlab/data:/var/opt/gitlab
     shm_size: '256m'
+
   jenkins:
     image: jenkins/jenkins:lts
+    container_name: jenkins
     privileged: true
     user: root
     ports:
       - 8080:8080
       - 50000:50000
-    container_name: jenkins
     volumes:
        - /home/${myname}/jenkins_compose/jenkins_configuration:/var/jenkins_home
        - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - SERVER_URL_REPOSITORY=${SERVER_URL_REPOSITORY}
+
   registry:
-    image: registry
+    image: registry:latest
+    container_name: docker-registry
     restart: always
     volumes:
-      - /var/registry:/var/registry #proveriti
+      - ./registry:/var/lib/registry #proveriti
+    ports:
+      - 5000:5000
+
+  certbot:
+    container_name: letsencrypt-bot
+    image: certbot/certbot
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+    networks:
+      - votek-solutions-dev-network
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+networks:
+  votek-solutions-dev-network:
+    driver: bridged
+    external: true
+
       
