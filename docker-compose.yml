@@ -16,7 +16,6 @@ services:
       - SERVER_URL_GIT=${SERVER_URL_GIT}
       - SERVER_URL_JENKINS=${SERVER_URL_JENKINS}
       - SERVER_URL_REGOSTRY=${SERVER_URL_REGISTRY}
-
     networks:
       - votek-solutions-dev-network
     depends_on:
@@ -48,6 +47,8 @@ services:
       - ./gitlab/logs:/var/log/gitlab
       - ./gitlab/data:/var/opt/gitlab
     shm_size: '256m'
+    networks:
+      - votek-solutions-dev-network
 
   jenkins:
     image: jenkins/jenkins:lts
@@ -60,6 +61,8 @@ services:
     volumes:
        - ./jenkins:/var/jenkins_home
        - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - votek-solutions-dev-network
 
   registry:
     image: registry:latest
@@ -69,7 +72,9 @@ services:
       - ./registry:/var/lib/registry #proveriti
     ports:
       - 5000:5000
-
+    networks:
+      - votek-solutions-dev-network
+      
   certbot:
     container_name: certbot
     image: certbot/certbot
@@ -95,7 +100,9 @@ services:
       - ./sonarqube/logs:/opt/sonarqube/logs
     ports:
       - 9000:9000
-
+    networks:
+      - votek-solutions-dev-network
+      
   db:
     image: postgres:latest
     hostname: postgresql
